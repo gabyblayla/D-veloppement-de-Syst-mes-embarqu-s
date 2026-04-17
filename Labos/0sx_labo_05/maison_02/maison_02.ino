@@ -174,7 +174,7 @@ void gestionnaireEtatIrr(unsigned long ct) {
 }
 
 void switchState() {
-  if (currentIrrState == OUVERTURE || currentIrrState == FERMETURE) {
+  if (currentIrrState == FERMETURE) {
     currentIrrState = ARRET;
     return;
   }
@@ -251,6 +251,8 @@ void lireLuminosite(unsigned long ct) {
   static unsigned long lastTime = 0;
   const int petit = 0;
   const int grand = 100;
+  const int allume = 30;
+  const int eteint = 35;
   static bool ledState = false;
 
   if (maximum <= minimum) {
@@ -262,11 +264,13 @@ void lireLuminosite(unsigned long ct) {
     
     luminosite = analogRead(PHOTO_PIN);
     luminosite = map(luminosite, minimum, maximum, petit, grand);
-    luminosite = constrain(luminosite, 0, 100);
+    luminosite = constrain(luminosite, petit, grand);
 
-    if (luminosite < 30) {
+
+
+    if (luminosite < allume) {
       ledState = true;
-    } else if (luminosite > 35) {
+    } else if (luminosite > eteint) {
       ledState = false;
     }
   }
@@ -377,19 +381,19 @@ void etatVanneState(unsigned long ct) {
     
     switch (currentIrrState) {
       case FERME: 
-        etat = "Ferme";
+        etat = " Ferme";
         break;
       case OUVERTURE:
-        etat = "Ouverture";
+        etat = " Ouverture";
         break;
       case OUVERT:
-        etat = "Ouvert";
+        etat = " Ouvert";
         break;
       case FERMETURE:
-        etat = "Fermeture";
+        etat = " Fermeture";
         break;
       case ARRET:
-        etat = "Arret";
+        etat = " Arret";
         break;  
     }
 
@@ -419,38 +423,43 @@ void clignoterLED(unsigned long ct) {
 }
 
 void ouvertState() {
-  if (distance >= 25) {
+  const int dist = 25;
+  if (distance >= dist) {
     currentIrrState = FERMETURE;
   } 
 }
 
 void fermeState() {
-  if (distance < 20) {
+  const int dist = 20;
+  if (distance < dist) {
     currentIrrState = OUVERTURE;
   }
 }
 
 void ouvertureState(unsigned long ct) {
+  const int stop = 0;
   moteur.moveTo(POS_OUVERT);
   moteur.run();
+
 
   currentState = ETAT_VANNE;
   clignoterLED(ct);
 
-  if (moteur.distanceToGo() == 0) {
+  if (moteur.distanceToGo() == stop) {
     currentIrrState = OUVERT;
     digitalWrite(LED_PIN, LOW);
   }
 }
 
 void fermetureState(unsigned long ct) {
+  const int stop = 0;
   moteur.moveTo(POS_FERME);
   moteur.run();
 
   currentState = ETAT_VANNE;
   clignoterLED(ct);
 
-  if (moteur.distanceToGo() == 0) {
+  if (moteur.distanceToGo() == stop) {
     currentIrrState = FERME;
     digitalWrite(LED_PIN, LOW);
   }
